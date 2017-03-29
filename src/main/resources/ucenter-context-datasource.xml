@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:rdb="http://www.dangdang.com/schema/ddframe/rdb"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+                        http://www.dangdang.com/schema/ddframe/rdb 
+                        http://www.dangdang.com/schema/ddframe/rdb/rdb.xsd ">
+
+	<context:property-placeholder location="classpath:dev/jdbc.properties"
+		ignore-unresolvable="true" order="1" />
+
+	<bean id="dbtbl_user_0" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="${jdbc.driver0}" />
+		<property name="jdbcUrl" value="${jdbc.url0}" />
+		<property name="user" value="${jdbc.username0}" />
+		<property name="password" value="${jdbc.password0}" />
+		<property name="initialPoolSize" value="2" />
+		<property name="minPoolSize" value="2" />
+		<property name="maxPoolSize" value="30" />
+		<property name="acquireIncrement" value="10" />
+		<property name="maxIdleTime" value="10" />
+		<property name="maxStatements" value="0" />
+		<property name="testConnectionOnCheckout" value="false" />
+		<property name="idleConnectionTestPeriod" value="30" />
+		<property name="preferredTestQuery" value="select 1" />
+		<property name="numHelperThreads" value="10"></property>
+		<property name="maxAdministrativeTaskTime" value="150"></property>
+		<property name="breakAfterAcquireFailure" value="false"></property>
+		<property name="acquireRetryAttempts" value="10"></property>
+	</bean>
+
+	<bean id="dbtbl_user_1" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="${jdbc.driver1}" />
+		<property name="jdbcUrl" value="${jdbc.url1}" />
+		<property name="user" value="${jdbc.username1}" />
+		<property name="password" value="${jdbc.password1}" />
+		<property name="initialPoolSize" value="2" />
+		<property name="minPoolSize" value="2" />
+		<property name="maxPoolSize" value="30" />
+		<property name="acquireIncrement" value="10" />
+		<property name="maxIdleTime" value="10" />
+		<property name="maxStatements" value="0" />
+		<property name="testConnectionOnCheckout" value="false" />
+		<property name="idleConnectionTestPeriod" value="30" />
+		<property name="preferredTestQuery" value="select 1" />
+		<property name="numHelperThreads" value="10"></property>
+		<property name="maxAdministrativeTaskTime" value="150"></property>
+		<property name="breakAfterAcquireFailure" value="false"></property>
+		<property name="acquireRetryAttempts" value="10"></property>
+	</bean>
+
+	<rdb:strategy id="idTbSharding" sharding-columns="uid"
+		algorithm-class="com.bz.open.sharding.ucenter.dao.sharding.SingleKeyModuleDatabaseShardingAlgorithm" />
+
+	<rdb:strategy id="tableUserShardingStrategy"
+		sharding-columns="uid"
+		algorithm-class="com.bz.open.sharding.ucenter.dao.sharding.SingleKeyModuleTableShardingAlgorithm" />
+
+	<rdb:strategy id="tableWechatShardingStrategy"
+		sharding-columns="openid"
+		algorithm-class="com.bz.open.sharding.ucenter.dao.sharding.SingleKeyModuleTableShardingAlgorithm" />
+
+	<rdb:data-source id="shardingDataSource">
+		<rdb:sharding-rule data-sources="dbtbl_user_0,dbtbl_user_1"
+			default-data-source="dbtbl_user_0">
+			<rdb:table-rules>
+				<rdb:table-rule logic-table="t_user" actual-tables="t_user_${0..1}"
+					database-strategy="idTbSharding" table-strategy="tableUserShardingStrategy" />
+				<rdb:table-rule logic-table="t_wechat_user"
+					actual-tables="t_wechat_user_${0..1}" database-strategy="idTbSharding"
+					table-strategy="tableWechatShardingStrategy" />
+			</rdb:table-rules>
+
+			<rdb:default-database-strategy
+				sharding-columns="none"
+				algorithm-class="com.dangdang.ddframe.rdb.sharding.api.strategy.database.NoneDatabaseShardingAlgorithm" />
+		</rdb:sharding-rule>
+	</rdb:data-source>
+
+
+</beans>
+    
