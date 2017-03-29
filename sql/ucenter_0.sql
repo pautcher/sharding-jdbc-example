@@ -44,5 +44,16 @@ CREATE TABLE `t_wechat_user_1` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS  `t_user_application`;
+CREATE TABLE `t_user_application` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` varchar(32) DEFAULT NULL,
+  `username` varchar(32) DEFAULT NULL,
+  `nickname` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `mobile` varchar(16) DEFAULT NULL,
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
