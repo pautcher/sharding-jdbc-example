@@ -3,15 +3,17 @@ package com.bz.open.sharding.ucenter.dao.sharding;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import com.dangdang.ddframe.rdb.sharding.api.ShardingValue;
 import com.dangdang.ddframe.rdb.sharding.api.strategy.table.SingleKeyTableShardingAlgorithm;
 import com.google.common.collect.Range;
 
-@Component
 public class SingleKeyModuleTableShardingAlgorithm implements SingleKeyTableShardingAlgorithm<String> {
+
+	private Logger log = LoggerFactory.getLogger(SingleKeyModuleTableShardingAlgorithm.class);
 
 	@Value("#{cfg['system.database.table.count']}")
 	private int tableCount = 2;
@@ -20,7 +22,10 @@ public class SingleKeyModuleTableShardingAlgorithm implements SingleKeyTableShar
 	public String doEqualSharding(final Collection<String> availableTargetNames,
 			final ShardingValue<String> shardingValue) {
 		for (String each : availableTargetNames) {
-			if (each.endsWith(Math.abs(shardingValue.getValue().hashCode()) % tableCount + "")) {
+			String[] segs = each.split("_");
+			if (Integer
+					.parseInt(segs[segs.length - 1]) == (Math.abs(shardingValue.getValue().hashCode()) % tableCount)) {
+				log.info("Hashing Table::" + each);
 				return each;
 			}
 		}
@@ -34,7 +39,8 @@ public class SingleKeyModuleTableShardingAlgorithm implements SingleKeyTableShar
 		Collection<String> values = shardingValue.getValues();
 		for (String value : values) {
 			for (String tableNames : availableTargetNames) {
-				if (tableNames.endsWith(Math.abs(value.hashCode()) % tableCount + "")) {
+				String[] segs = tableNames.split("_");
+				if (Integer.parseInt(segs[segs.length - 1]) == (Math.abs(value.hashCode()) % tableCount)) {
 					result.add(tableNames);
 				}
 			}
@@ -45,7 +51,17 @@ public class SingleKeyModuleTableShardingAlgorithm implements SingleKeyTableShar
 	@Override
 	public Collection<String> doBetweenSharding(final Collection<String> availableTargetNames,
 			final ShardingValue<String> shardingValue) {
-		return null;
+		Collection<String> result = new LinkedHashSet<>(availableTargetNames.size());
+		Range<String> range = shardingValue.getValueRange();
+		// for (String i = range.lowerEndpoint(); i <= range.upperEndpoint();
+		// i++) {
+		// for (String each : availableTargetNames) {
+		// if (each.endsWith(i % tableCount + "")) {
+		// result.add(each);
+		// }
+		// }
+		// }
+		return result;
 	}
 
 	/**
